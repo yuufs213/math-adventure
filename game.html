@@ -70,43 +70,84 @@
       cursor: pointer;
       margin: 10px;
     }
-    button:hover { background-color: #388e3c; }
-    .back-btn { background-color: #757575; margin-top: 20px; }
-    .feedback { font-size: 24px; height: 36px; margin: 15px 0; }
-    .score { font-size: 20px; color: #d32f2f; font-weight: bold; }
-    .celebration { color: #ff6f00; font-size: 30px; animation: bounce 0.5s; }
-    @keyframes bounce { 0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)} }
-    canvas { position: fixed; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none; }
+    button:hover {
+      background-color: #388e3c;
+    }
+    .back-btn {
+      background-color: #757575;
+      margin-top: 20px;
+    }
+    .feedback {
+      font-size: 24px;
+      height: 36px;
+      margin: 15px 0;
+    }
+    .score {
+      font-size: 20px;
+      color: #d32f2f;
+      font-weight: bold;
+    }
+    .celebration {
+      color: #ff6f00;
+      font-size: 30px;
+      animation: bounce 0.5s;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
+  <!-- Name Display -->
   <div class="name-tag" id="nameTag">Hello, Player! 👋</div>
+
+  <!-- Confetti Canvas -->
   <canvas id="confetti-canvas"></canvas>
 
+  <!-- Game UI -->
   <div class="container">
     <h1 id="title">🎮 Game Time!</h1>
     <div class="question" id="question">Loading...</div>
     <input type="number" id="answer" placeholder="?" autofocus />
+
     <div>
       <button id="submit">Check Answer</button>
       <button id="next" style="display:none;">Next Question</button>
     </div>
+
     <div class="feedback" id="feedback"></div>
     <div class="score" id="score">Score: 0 / 10</div>
-    <button onclick="window.location.href='index.html'" class="back-btn">← Menu</button>
+
+    <button onclick="window.location.href='index.html'" class="back-btn">
+      ← Return to Menu
+    </button>
   </div>
 
   <script>
-    // Name
+    // Set name from localStorage
     const name = localStorage.getItem("childName") || "Friend";
     document.getElementById("nameTag").textContent = `Hi ${name}! 👋`;
 
-    // Confetti
+    // Confetti Setup
     const canvas = document.getElementById("confetti-canvas");
     const ctx = canvas.getContext("2d");
     let width = canvas.width = window.innerWidth;
     let height = canvas.height = window.innerHeight;
-    window.addEventListener("resize", () => { width = canvas.width = innerWidth; height = canvas.height = innerHeight; });
+
+    window.addEventListener("resize", () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
 
     const confettiPieces = [];
     const colors = ["#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff", "#00ffff", "#ff9900", "#ff33cc"];
@@ -147,7 +188,7 @@
     }
     animateConfetti();
 
-    // Game logic (same as before)
+    // Game Logic
     const questionEl = document.getElementById("question");
     const answerEl = document.getElementById("answer");
     const submitBtn = document.getElementById("submit");
@@ -165,40 +206,60 @@
     let questions = [];
     let currentQuestionIndex = 0;
 
+    // Generate Questions
     function generateQuestions() {
       const q = [];
+
       if (operation === "addition") {
         titleEl.textContent = "➕ Addition Adventure";
-        const options = Object.keys(settings).filter(k => k.startsWith("add") && settings[k]).map(k => parseInt(k.slice(-1)));
+        const options = Object.keys(settings)
+          .filter(k => k.startsWith("add") && settings[k])
+          .map(k => parseInt(k.slice(-1)));
+        if (options.length === 0) options.push(1);
         for (let i = 0; i < total; i++) {
           const n1 = Math.floor(Math.random() * 10) + 1;
-          const n2 = options[Math.floor(Math.random() * options.length)] || 1;
+          const n2 = options[Math.floor(Math.random() * options.length)];
           q.push({ text: `${n1} + ${n2} = ?`, answer: n1 + n2 });
         }
       }
+
       else if (operation === "subtraction") {
         titleEl.textContent = "➖ Subtraction Adventure";
-        const options = Object.keys(settings).filter(k => k.startsWith("sub") && settings[k]).map(k => parseInt(k.slice(-1)));
+        const options = Object.keys(settings)
+          .filter(k => k.startsWith("sub") && settings[k])
+          .map(k => parseInt(k.slice(-1)));
+        if (options.length === 0) options.push(1);
         for (let i = 0; i < total; i++) {
-          const n2 = options[Math.floor(Math.random() * options.length)] || 1;
+          const n2 = options[Math.floor(Math.random() * options.length)];
           const n1 = Math.floor(Math.random() * (11 - n2)) + n2;
           q.push({ text: `${n1} - ${n2} = ?`, answer: n1 - n2 });
         }
       }
+
       else if (operation === "multiplication") {
         const table = settings.table || 2;
         const isRandom = settings.random !== false;
         titleEl.textContent = `✖️ ${table} Times Table`;
-        const end = isRandom ? total : 10;
-        for (let i = isRandom ? 0 : 1; i < end; i++) {
-          const n2 = isRandom ? Math.floor(Math.random() * 10) + 1 : i;
-          q.push({ text: `${table} × ${n2} = ?`, answer: table * n2 });
+
+        if (isRandom) {
+          for (let i = 0; i < total; i++) {
+            const n2 = Math.floor(Math.random() * 10) + 1;
+            q.push({ text: `${table} × ${n2} = ?`, answer: table * n2 });
+          }
+        } else {
+          // In Order: show 1 to 10
+          for (let i = 1; i <= 10; i++) {
+            q.push({ text: `${table} × ${i} = ?`, answer: table * i });
+          }
+          // Take only the first 'total' questions (e.g., 10)
+          q = q.slice(0, total);
         }
-        if (!isRandom) q.length = total;
       }
+
       return q;
     }
 
+    // Start Game
     function startGame() {
       questions = generateQuestions();
       currentQuestionIndex = 0;
@@ -208,8 +269,12 @@
       showQuestion();
     }
 
+    // Show Current Question
     function showQuestion() {
-      if (current >= total) return endGame();
+      if (current >= total) {
+        endGame();
+        return;
+      }
       const q = questions[currentQuestionIndex];
       questionEl.textContent = q.text;
       answerEl.value = "";
@@ -220,26 +285,34 @@
       nextBtn.style.display = "none";
     }
 
+    // Check Answer
     function checkAnswer() {
-      const ans = parseInt(answerEl.value);
-      if (isNaN(ans)) return feedbackEl.textContent = "🚫 Enter a number!";
-      if (ans === window.currentAnswer) {
+      const userAnswer = parseInt(answerEl.value);
+      if (isNaN(userAnswer)) {
+        feedbackEl.textContent = "🚫 Enter a number!";
+        return;
+      }
+
+      if (userAnswer === window.currentAnswer) {
         feedbackEl.innerHTML = '<span class="celebration">🎉 Correct!</span>';
         correct++;
       } else {
         feedbackEl.textContent = `😊 Answer: ${window.currentAnswer}`;
       }
+
       current++;
       scoreEl.textContent = `Score: ${correct} / ${total}`;
       submitBtn.style.display = "none";
       nextBtn.style.display = "inline-block";
     }
 
+    // Next Question
     function nextQuestion() {
       currentQuestionIndex++;
       showQuestion();
     }
 
+    // End Game
     function endGame() {
       questionEl.textContent = "🏆 All Done!";
       answerEl.disabled = true;
@@ -259,12 +332,17 @@
       }
     }
 
+    // Event Listeners
     submitBtn.addEventListener("click", checkAnswer);
     nextBtn.addEventListener("click", nextQuestion);
-    answerEl.addEventListener("keypress", e => {
-      if (e.key === "Enter") (nextBtn.style.display === "none") ? checkAnswer() : nextQuestion();
+    answerEl.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        if (nextBtn.style.display === "none") checkAnswer();
+        else nextQuestion();
+      }
     });
 
+    // Start the game
     startGame();
   </script>
 </body>
