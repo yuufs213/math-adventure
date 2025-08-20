@@ -109,7 +109,7 @@
 </head>
 <body>
   <!-- Name Display -->
-  <div class="name-tag" id="nameTag">Hello, Player! 👋</div>
+  <div class="name-tag" id="nameTag">Hi there! 👋</div>
 
   <!-- Confetti Canvas -->
   <canvas id="confetti-canvas"></canvas>
@@ -134,11 +134,27 @@
   </div>
 
   <script>
-    // Set name from localStorage
+    // === Step 1: Get Name ===
     const name = localStorage.getItem("childName") || "Friend";
     document.getElementById("nameTag").textContent = `Hi ${name}! 👋`;
 
-    // Confetti Setup
+    // === Step 2: Get Operation & Settings ===
+    const operation = localStorage.getItem("mathOperation");
+    let settings = {};
+    try {
+      settings = JSON.parse(localStorage.getItem("settings") || "{}");
+    } catch (e) {
+      console.error("Failed to parse settings", e);
+      settings = {};
+    }
+
+    // Fallback if no operation
+    if (!operation) {
+      alert("No operation selected. Returning to menu.");
+      window.location.href = "index.html";
+    }
+
+    // === Confetti Setup ===
     const canvas = document.getElementById("confetti-canvas");
     const ctx = canvas.getContext("2d");
     let width = canvas.width = window.innerWidth;
@@ -188,7 +204,7 @@
     }
     animateConfetti();
 
-    // Game Logic
+    // === Game Variables ===
     const questionEl = document.getElementById("question");
     const answerEl = document.getElementById("answer");
     const submitBtn = document.getElementById("submit");
@@ -197,16 +213,13 @@
     const scoreEl = document.getElementById("score");
     const titleEl = document.getElementById("title");
 
-    const operation = localStorage.getItem("mathOperation");
-    const settings = JSON.parse(localStorage.getItem("settings") || "{}");
-
     let correct = 0;
     let total = 10;
     let current = 0;
     let questions = [];
     let currentQuestionIndex = 0;
 
-    // Generate Questions
+    // === Generate Questions ===
     function generateQuestions() {
       const q = [];
 
@@ -237,7 +250,8 @@
       }
 
       else if (operation === "multiplication") {
-        const table = settings.table || 2;
+        // ✅ Critical Fix: Ensure table is a number
+        let table = parseInt(settings.table) || 2;
         const isRandom = settings.random !== false;
         titleEl.textContent = `✖️ ${table} Times Table`;
 
@@ -247,32 +261,45 @@
             q.push({ text: `${table} × ${n2} = ?`, answer: table * n2 });
           }
         } else {
-          // In Order: show 1 to 10
+          // In Order: 1 to 10
           for (let i = 1; i <= 10; i++) {
             q.push({ text: `${table} × ${i} = ?`, answer: table * i });
           }
-          // Take only the first 'total' questions (e.g., 10)
-          q = q.slice(0, total);
+          // Limit to 10 questions
+          q.length = Math.min(q.length, total);
         }
       }
 
-      return q;
+      return q.length > 0 ? q : [{ text: `1 + 1 = ?`, answer: 2 }]; // fallback
     }
 
-    // Start Game
+    // === Start Game ===
     function startGame() {
-      questions = generateQuestions();
-      currentQuestionIndex = 0;
-      correct = 0;
-      current = 0;
-      scoreEl.textContent = `Score: 0 / ${total}`;
-      showQuestion();
+      try {
+        questions = generateQuestions();
+        if (questions.length === 0) {
+          throw new Error("No questions generated");
+        }
+        currentQuestionIndex = 0;
+        correct = 0;
+        current = 0;
+        scoreEl.textContent = `Score: 0 / ${total}`;
+        showQuestion();
+      } catch (e) {
+        console.error("Game start error:", e);
+        questionEl.textContent = "❌ Error loading game!";
+        feedbackEl.textContent = "Try again or go back.";
+      }
     }
 
-    // Show Current Question
+    // === Show Question ===
     function showQuestion() {
       if (current >= total) {
         endGame();
+        return;
+      }
+      if (currentQuestionIndex >= questions.length) {
+        questionEl.textContent = "🏁 End";
         return;
       }
       const q = questions[currentQuestionIndex];
@@ -285,7 +312,7 @@
       nextBtn.style.display = "none";
     }
 
-    // Check Answer
+    // === Check Answer ===
     function checkAnswer() {
       const userAnswer = parseInt(answerEl.value);
       if (isNaN(userAnswer)) {
@@ -306,13 +333,13 @@
       nextBtn.style.display = "inline-block";
     }
 
-    // Next Question
+    // === Next Question ===
     function nextQuestion() {
       currentQuestionIndex++;
       showQuestion();
     }
 
-    // End Game
+    // === End Game ===
     function endGame() {
       questionEl.textContent = "🏆 All Done!";
       answerEl.disabled = true;
@@ -332,7 +359,7 @@
       }
     }
 
-    // Event Listeners
+    // === Event Listeners ===
     submitBtn.addEventListener("click", checkAnswer);
     nextBtn.addEventListener("click", nextQuestion);
     answerEl.addEventListener("keypress", (e) => {
@@ -342,7 +369,7 @@
       }
     });
 
-    // Start the game
+    // === Start Game on Load ===
     startGame();
   </script>
 </body>
