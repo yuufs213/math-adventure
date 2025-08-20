@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Addition Settings</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: linear-gradient(to right, #a8e6cf, #dcedc1);
+      color: #333;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      max-width: 500px;
+      width: 90%;
+    }
+    h1 {
+      color: #4caf50;
+      margin-bottom: 20px;
+    }
+    .options {
+      margin: 20px 0;
+      text-align: left;
+    }
+    .option {
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .option input {
+      transform: scale(1.3);
+    }
+    .option label {
+      font-size: 20px;
+    }
+    button {
+      font-size: 20px;
+      padding: 12px 25px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 10px;
+    }
+    button:hover {
+      background-color: #388e3c;
+    }
+    .back {
+      background-color: #757575;
+    }
+    .name-tag {
+      font-size: 32px;
+      color: #ff6f00;
+      position: fixed;
+      top: 20px;
+      width: 100%;
+      text-align: center;
+      z-index: 5;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="name-tag" id="nameTag">Hello, Player! 👋</div>
+
+  <div class="container">
+    <h1>➕ Addition Adventure</h1>
+    <p>Choose which to practice:</p>
+    <div class="options">
+      <div class="option">
+        <input type="checkbox" id="add1" checked>
+        <label for="add1">+1</label>
+      </div>
+      <div class="option">
+        <input type="checkbox" id="add2" checked>
+        <label for="add2">+2</label>
+      </div>
+      <div class="option">
+        <input type="checkbox" id="add3" checked>
+        <label for="add3">+3</label>
+      </div>
+    </div>
+    <button onclick="start('addition')">🚀 Start Game</button>
+    <button onclick="back()" class="back">← Menu</button>
+  </div>
+
+  <script>
+    const name = localStorage.getItem("childName") || "Friend";
+    document.getElementById("nameTag").textContent = `Hi ${name}! 👋`;
+
+    function start(op) {
+      const opts = {
+        add1: document.getElementById("add1").checked,
+        add2: document.getElementById("add2").checked,
+        add3: document.getElementById("add3").checked
+      };
+      localStorage.setItem("mathOperation", op);
+      localStorage.setItem("settings", JSON.stringify(opts));
+      window.location.href = "game.html";
+    }
+    function back() {
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
